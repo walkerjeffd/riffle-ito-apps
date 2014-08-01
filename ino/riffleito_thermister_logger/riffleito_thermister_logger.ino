@@ -7,7 +7,7 @@
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
-int debug=1;
+int debug=0;
 int led = A2;
 
 RTC_DS3231 RTC;
@@ -24,7 +24,7 @@ char filename[] = "LOGGER00.csv";
 File dataFile;
 String fileHeader = "DATETIME,RTC_TEMP_C,TEMP_C,BATTERY_LEVEL";
 
-#define LOG_INTERVAL  5000 // millsec between readings
+#define LOG_INTERVAL  60000 // millsec between readings
 
 #define BATTERYPIN A3
 
