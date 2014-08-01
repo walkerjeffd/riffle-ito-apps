@@ -2,32 +2,32 @@
 Jeff Walker & Don Blair  
 August 1, 2014  
 
-This document summarizes data collected by two [Riffle-ito Water Quality Data Loggers](https://github.com/p-v-o-s/riffle-ito) deployed at a USGS streamflow gage in .
+This document summarizes data collected by two [Riffle-ito Water Quality Data Loggers](https://github.com/p-v-o-s/riffle-ito) deployed at USGS streamflow gage [01104455](http://waterdata.usgs.gov/ma/nwis/uv/?site_no=01104455) on Stony Brook in Waltham, MA.
 
-**Purpose**: To determine the stability and battery-lifetime of a single riffle-ito deployment, and to compare the on-board RTC temperature measurements to the DHT22 measurements.
+**Purpose**: The first field test of a riffle-ito for temperature, conductivity, and light levels. The riffle-itos were deployed at the location of a USGS streamflow gage for verification.
 
-**Description**: The riffle-ito was configured with the sketch above and set to record readings from a DHT22 temperature/humidity sensor every 60 seconds. Three fresh Duracell AA batteries were used to power the riffle-ito. Data were retrieved every few days resulting in short gaps and multiple data files, however the batteries were not changed.  
+**Location**: Stony Brook in Waltham, MA 
 
-**Location**: 
+**Public Lab Note**: See the [Public Lab Research Note](http://publiclab.org/notes/donblair/08-01-2014/first-riffle-deployment-city-of-cambridge-water-department) for more photos and descriptions
 
-## Set Up
+# Set Up
 
-First we'll load the R packages used for this summary.
+First load the R packages used for this summary.
 
 
 ```r
 library(lubridate)
 library(dplyr)
 library(tidyr)
+library(stringr)
 library(ggplot2)
 theme_set(theme_bw())
 ```
 
-## Load Data
+# Load Data
 
 The raw data are stored in the `./data` directory. There are multiple files for this 
-deployment because I temporarily removed the SD card from the riffle-ito to download
-the data. As shown in the [sketch](), whenever the riffle-ito is powered on, it creates a new logging file by incrementing the last two digits by one.
+deployment, one file per riffle-ito. The two files have different columns because Riffle 1 only measured temperature, and Riffle 2 measured temperature, conductivity, and light levels.
 
 
 ```r
@@ -67,80 +67,36 @@ head(riffle2)
 ## 6          64           744
 ```
 
-Next, we want to parse the datetimes using `lubridate::ymd_hms()` to `POSIXct` objects.
+Next, parse the datetimes using `lubridate::ymd_hms()` to `POSIXct` objects and assign an ID to each dataset. 
+
+Increase the battery level readings for Riffle-1 by a factor of 100 due a mistake in the original sketch that reduced the recorded values by 100 before writing to the SD card.
+
+Also filter the data in each dataset to exclude the first and last few readings of each deployment when each riffle-ito was in the air. 
 
 
 ```r
 riffle1 <- mutate(riffle1,
                   DATETIME=ymd_hms(DATETIME),
                   RIFFLE='Riffle-1',
-                  BATTERY_LEVEL=BATTERY_LEVEL*100)
+                  BATTERY_LEVEL=BATTERY_LEVEL*100) %>%
+    filter(DATETIME >= ymd_hm("2014-07-25 12:00"),
+           DATETIME <= ymd_hm("2014-08-01 10:30"))
 riffle2 <- mutate(riffle2,
                   DATETIME_REG=ymd_hms(DATETIME_REG),
-                  RIFFLE='Riffle-2')
-summary(riffle1)
+                  RIFFLE='Riffle-2') %>%
+    filter(DATETIME_REG >= ymd_hm("2014-07-28 17:30"),
+           DATETIME_REG <= ymd_hm("2014-08-01 10:30"))
 ```
 
-```
-##     DATETIME                     RTC_TEMP_C       TEMP_C     BATTERY_LEVEL
-##  Min.   :2014-07-25 10:40:55   Min.   :18.0   Min.   :17.2   Min.   :667  
-##  1st Qu.:2014-07-27 05:58:26   1st Qu.:20.5   1st Qu.:20.6   1st Qu.:691  
-##  Median :2014-07-29 01:14:36   Median :21.2   Median :21.3   Median :702  
-##  Mean   :2014-07-29 01:13:30   Mean   :21.5   Mean   :21.5   Mean   :705  
-##  3rd Qu.:2014-07-30 20:28:54   3rd Qu.:22.0   3rd Qu.:22.2   3rd Qu.:716  
-##  Max.   :2014-08-01 15:44:01   Max.   :40.0   Max.   :36.0   Max.   :740  
-##     RIFFLE         
-##  Length:2058       
-##  Class :character  
-##  Mode  :character  
-##                    
-##                    
-## 
-```
-
-```r
-summary(riffle2)
-```
-
-```
-##  DATETIME_UNIX       DATETIME_REG                   RTC_TEMP_C  
-##  Min.   :1.41e+09   Min.   :2014-07-28 16:46:19   Min.   :17.0  
-##  1st Qu.:1.41e+09   1st Qu.:2014-07-29 16:32:12   1st Qu.:19.2  
-##  Median :1.41e+09   Median :2014-07-30 16:16:44   Median :20.0  
-##  Mean   :1.41e+09   Mean   :2014-07-30 16:16:41   Mean   :20.3  
-##  3rd Qu.:1.41e+09   3rd Qu.:2014-07-31 16:01:04   3rd Qu.:20.8  
-##  Max.   :1.41e+09   Max.   :2014-08-01 15:47:37   Max.   :36.2  
-##      TEMP_C     CONDUCT_FREQ_HERTZ  PHOTORESIST    BATTERY_LEVEL
-##  Min.   :20.9   Min.   :   0.1     Min.   :  0.0   Min.   :701  
-##  1st Qu.:21.3   1st Qu.:1573.9     1st Qu.:  0.0   1st Qu.:709  
-##  Median :21.8   Median :1698.9     Median : 21.0   Median :717  
-##  Mean   :22.1   Mean   :1580.9     Mean   : 70.1   Mean   :719  
-##  3rd Qu.:22.2   3rd Qu.:1731.0     3rd Qu.: 97.8   3rd Qu.:730  
-##  Max.   :36.4   Max.   :1792.4     Max.   :945.0   Max.   :744  
-##     RIFFLE         
-##  Length:1142       
-##  Class :character  
-##  Mode  :character  
-##                    
-##                    
-## 
-```
-
-The data are currently in a wide format, where each column represents a single variable (see [Tidy Data](http://vita.had.co.nz/papers/tidy-data.pdf) and [Reshaping Data with the reshape Package](http://www.jstatsoft.org/v21/i12/paper) by Hadley Wickham for more information about long/wide formats, and note that `tidyr` is a relatively new package that provides much of the same functionality as the `reshape2` package). 
-
-For plotting, it will be easier to convert to a long format. This can easily be done using the `tidyr::gather` function.
+For plotting, it will be easier to convert the datasets to a long format first. This can easily be done using the `tidyr::gather` function.
 
 
 ```r
-riffle1 <- gather(riffle1, VAR, VALUE, RTC_TEMP_C:BATTERY_LEVEL) %>%
-  filter(DATETIME >= ymd_hm("2014-07-25 12:00"),
-         DATETIME <= ymd_hm("2014-08-01 10:30"))
+riffle1 <- gather(riffle1, VAR, VALUE, RTC_TEMP_C:BATTERY_LEVEL)
 riffle2 <- mutate(riffle2, DATETIME=DATETIME_REG) %>%
-  dplyr::select(-DATETIME_UNIX, -DATETIME_REG) %>%
+  select(-DATETIME_UNIX, -DATETIME_REG) %>%
   gather(VAR, VALUE, RTC_TEMP_C, TEMP_C, 
-         CONDUCT_FREQ_HERTZ, PHOTORESIST, BATTERY_LEVEL) %>%
-  filter(DATETIME >= ymd_hm("2014-07-28 17:30"),
-         DATETIME <= ymd_hm("2014-08-01 10:30"))
+         CONDUCT_FREQ_HERTZ, PHOTORESIST, BATTERY_LEVEL)
 df <- rbind(riffle1, riffle2) %>%
   mutate(RIFFLE=factor(RIFFLE))
 summary(df)
@@ -165,9 +121,9 @@ summary(df)
 
 The data are now in long format with each row corresponding to one measurement for a single variable.
 
-## Visualizations
+# Riffle Data Plots
 
-We can plot the data with each panel showing one of the variables. The data are colored by the corresponding file/deployment. 
+This figures shows the raw data of both riffle-ito deployments. The data are colored by the corresponding file/deployment. 
 
 
 ```r
@@ -181,33 +137,36 @@ ggplot(df, aes(DATETIME, VALUE, color=RIFFLE)) +
 
 ![plot of chunk plot_timeseries](./index_files/figure-html/plot_timeseries.png) 
 
-Both Riffle-itos were extracted from the field around 2014-08-01 10:30 AM so we'll drop all data after that. 
+## Temperature Sensor
 
-We can compare the RTC on-board temperature to the DHT22 temperature for verification. The red line in this figure is a 1:1 line of equality; the blue line is a linear regression. This figure shows that the DHT22 temperature (`TEMP_C`) tends to be about 0.5 degC greater than the RTC temperature (`RTC_TEMP_C`).
+Although both riffle-itos were deployed at the same location, they showed significant differences in temperature. The primary issue seems to be with Riffle-2 due to the differences between the on-board RTC temperature (`RTC_TEMP_C`) and the thermister temperature (`TEMP_C`). 
+
+The following figure plots `TEMP_C` vs `RTC_TEMP_C` for both riffles. The dashed black line is a 1:1 line of equality, the other lines are linear regressions for each riffle-ito. Riffle-1 shows very good agreement between the RTC and thermister temperatures, while Riffle-2 shows poor agreement but some positive relationship.
 
 
 ```r
 spread(df, VAR, VALUE) %>%
   ggplot(aes(RTC_TEMP_C, TEMP_C, color=RIFFLE)) +
   geom_point() +
-  geom_abline(color='red', linetype=2) +
+  geom_abline(color='black', linetype=2) +
   geom_smooth(method='lm')
 ```
 
 ![plot of chunk plot_compare_temp](./index_files/figure-html/plot_compare_temp.png) 
 
-THe differences between the RTC and DHT22 temperature show an interesting (i.e. non-regular) pattern over time.
+The differences between the RTC and thermister temperatures indicate an ir-regular bias for Riffle-2.
 
 
 ```r
 spread(df, VAR, VALUE) %>%
   ggplot(aes(DATETIME, RTC_TEMP_C-TEMP_C, color=RIFFLE)) +
-  geom_point()
+  geom_point() +
+  labs(x="Datetime")
 ```
 
 ![plot of chunk plot_temp_diff](./index_files/figure-html/plot_temp_diff.png) 
 
-As another comparison, we can plot timeseries of the RTC temperature and the DHT22 temperature on the same figure.
+As another comparison, we can plot timeseries of the RTC and thermister temperatures on the same figure, with each panel corresponding to one riffle-ito. This again shows the close agreement for Riffle-1 but not Riffle-2.
 
 
 ```r
@@ -221,6 +180,8 @@ ggplot(aes(DATETIME, VALUE, color=VAR)) +
 
 ## Light Sensor
 
+Riffle-2 included a photoresistor for recording light levels. This figure shows a time series of the light level data, the units of which are ohms(?). This shows a clear diurnal signal, as expected.
+
 
 ```r
 filter(df, VAR=='PHOTORESIST') %>%
@@ -230,6 +191,8 @@ filter(df, VAR=='PHOTORESIST') %>%
 ```
 
 ![plot of chunk plot_light](./index_files/figure-html/plot_light.png) 
+
+We can also see the diurnal signal by plotting these data by time of day (in decimal hours), with each line colored by the date. This shows that the highest light levels occurred around 14:00 on 2014-07-29.
 
 
 ```r
@@ -245,6 +208,10 @@ filter(df, VAR=='PHOTORESIST') %>%
 
 ## Conductivity Sensor
 
+Riffle-2 also included a conductivity sensor. This figure shows the timeseries of the conductivity measurements. 
+
+The pattern of this timeseries indicates that conductivity increased for the first few days, but quickly dropped the night of July 31, which indicates a possible rain storm that would have diluted the streamflow.
+
 
 ```r
 filter(df, VAR=='CONDUCT_FREQ_HERTZ') %>%
@@ -255,11 +222,15 @@ filter(df, VAR=='CONDUCT_FREQ_HERTZ') %>%
 
 ![plot of chunk plot_cond](./index_files/figure-html/plot_cond.png) 
 
-# Comparison to USGS Gage
+# Verification against USGS Gage
 
 Station: [01104455 STONY BROOK, UNNAMED TRIBUTARY 1, NEAR WALTHAM, MA](http://waterdata.usgs.gov/ma/nwis/uv/?site_no=01104455)
 
-[Download File](http://waterdata.usgs.gov/ma/nwis/uv?cb_00060=on&cb_00010=on&cb_00095=on&cb_63680=on&cb_99404=on&format=rdb&site_no=01104455&period=&begin_date=2014-07-25&end_date=2014-08-01)
+[Data File Source](http://waterdata.usgs.gov/ma/nwis/uv?cb_00060=on&cb_00010=on&cb_00095=on&cb_63680=on&cb_99404=on&format=rdb&site_no=01104455&period=&begin_date=2014-07-25&end_date=2014-08-01)
+
+The two riffle-itos were deployed at a USGS gage that provides continuous measurements of temperature and conductivity for verifying the riffle-ito data.
+
+First we load the data from a text file.
 
 
 ```r
@@ -280,7 +251,7 @@ head(usgs)
 ## 6 2014-07-25 00:45:00 0.25   21.5   1210  0.5      320
 ```
 
-Convert to long format.
+Then convert this data frame to a long format.
 
 
 ```r
@@ -298,7 +269,9 @@ ggplot(usgs, aes(DATETIME, VALUE)) +
 
 ![plot of chunk plot_usgs_ts](./index_files/figure-html/plot_usgs_ts.png) 
 
-Compare Riffle temp to USGS temp
+## Temperature Verification
+
+This figure plots the water temperature recorded by each riffle-ito and by the USGS gage. The Riffle-1 data show very strong agreement with the USGS gage although there is a consistent bias. The Riffle-2 temperature data show a greater bias, but also show a similar pattern.
 
 
 ```r
@@ -316,6 +289,99 @@ ggplot(temp, aes(DATETIME, VALUE, color=SOURCE)) +
 
 ![plot of chunk plot_usgs_riffle_temp](./index_files/figure-html/plot_usgs_riffle_temp.png) 
 
+The following figure shows a scatter plot of each riffle-ito against the USGS gage. Because each riffle-ito and the USGS gage collected measurements at different times, the data are averaged by hour first and then plotted (i.e. this figure compares hourly average temperature values). 
+
+The dashed black line in this figure is a 1:1 line of equality, while the colored lines are linear regressions between each riffle-ito and the USGS gage. 
+
+
+```r
+temp.compare <- mutate(temp, 
+       DATEHOUR=round_date(DATETIME, unit='hour'),
+       SOURCE = str_replace_all(SOURCE, '-', '_')) %>%
+  group_by(DATEHOUR, SOURCE, VAR) %>%
+  summarize(VALUE=mean(VALUE, na.rm=TRUE)) %>%
+  spread(SOURCE, VALUE) %>%
+  gather(RIFFLE, VALUE, Riffle_1:Riffle_2) %>%
+  filter(!is.na(VALUE))
+
+temp.compare %>%
+  ggplot(aes(USGS, VALUE, color=RIFFLE)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  geom_abline(color='black', linetype=2)
+```
+
+![plot of chunk plot_usgs_riffle_temp_scatter](./index_files/figure-html/plot_usgs_riffle_temp_scatter.png) 
+
+The following code summarizes a linear regression between the Riffle-1 and USGS temperature data. Note that one data point is excluded as an outlier (USGS=18.95, Riffle-1=20.59) as this point exhibits strong influence on the regression.
+
+
+```r
+lm.riffle_1 <- filter(temp.compare, RIFFLE=="Riffle_1", USGS >= 19) %>%
+  lm(VALUE ~ USGS, data=.)
+summary(lm.riffle_1)
+```
+
+```
+## 
+## Call:
+## lm(formula = VALUE ~ USGS, data = `filter(temp.compare, RIFFLE == "Riffle_1", USGS >= 19)`)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -0.7720 -0.0129  0.0007  0.0177  0.2284 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  0.79049    0.12455    6.35  2.1e-09 ***
+## USGS         0.98208    0.00595  164.99  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.0669 on 164 degrees of freedom
+## Multiple R-squared:  0.994,	Adjusted R-squared:  0.994 
+## F-statistic: 2.72e+04 on 1 and 164 DF,  p-value: <2e-16
+```
+
+The linear regression reports a slope of 0.98 and an intercept of 0.79. The slope is very close to unity indicating that the Riffle-1 dataset simply shows a constant bias of 0.79 degC, which could be corrected by calibration.
+
+The following is output from another linear regression of Riffle-2 against the USGS temperature data.
+
+
+```r
+lm.riffle_2 <- filter(temp.compare, RIFFLE=="Riffle_2") %>%
+  lm(VALUE ~ USGS, data=.)
+summary(lm.riffle_2)
+```
+
+```
+## 
+## Call:
+## lm(formula = VALUE ~ USGS, data = `filter(temp.compare, RIFFLE == "Riffle_2")`)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.10965 -0.03519 -0.00458  0.03158  0.18376 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   2.5028     0.2128    11.8   <2e-16 ***
+## USGS          0.9493     0.0105    90.5   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.0543 on 87 degrees of freedom
+## Multiple R-squared:  0.989,	Adjusted R-squared:  0.989 
+## F-statistic: 8.19e+03 on 1 and 87 DF,  p-value: <2e-16
+```
+
+The linear regression reports a slope of 0.95 and an intercept of 2.5. Again, the slope is very close to unity, however the bias is greater at 2.5 degC, which could also be corrected by calibration.
+
+## Conductivity Verification
+
+Although the riffle-ito conductivity measurements are not reported in standard units (e.g. uS/cm) and are not temperature corrected, they can still be compared to the USGS measurements. 
+
+This figure shows the Riffle and USGS conductivity data. Note that the units are not the same, but both lines show somewhat similar patterns. However, the dilution event on the night of July 31 is not reflected in the USGS dataset.
 
 
 ```r
@@ -334,21 +400,43 @@ ggplot(cond, aes(DATETIME, VALUE, color=SOURCE)) +
 
 ![plot of chunk plot_usgs_riffle_cond](./index_files/figure-html/plot_usgs_riffle_cond.png) 
 
-Compare hourly average conductivity measured by USGS and the Riffle.
+This figure shows a scatterplot between conductivity measured by USGS and the Riffle. As with temperature, this comparison uses hourly average values since the USGS and the Riffle collected measurements at different time intervals.
 
 
 ```r
-mutate(cond, DATEHOUR=round_date(DATETIME, unit='hour')) %>%
+cond.hr <- mutate(cond, DATEHOUR=round_date(DATETIME, unit='hour')) %>%
   group_by(DATEHOUR, SOURCE, VAR) %>%
   summarise(N=n(), VALUE=mean(VALUE, na.rm=TRUE)) %>%
   select(-VAR, -N) %>%
-  spread(SOURCE, VALUE) %>%
-ggplot(aes(USGS, RIFFLE)) +
+  spread(SOURCE, VALUE)
+ggplot(cond.hr, aes(USGS, RIFFLE)) +
   geom_point() +
   geom_smooth(method='lm')
 ```
 
 ![plot of chunk plot_usgs_riffle_cond_scatter](./index_files/figure-html/plot_usgs_riffle_cond_scatter.png) 
 
+We can also color the data points by temperature to see if a temperature correction may improve the fit in conductivity values. This figure suggests that some of the data points with greater errors have higher temperature, although it's not very definitive.
+
+
+```r
+usgs.temp.hr <- group_by(usgs.temp, DATEHOUR=round_date(DATETIME, unit='hour')) %>%
+  group_by(DATEHOUR) %>%
+  summarise(TEMP=mean(VALUE, na.rm=TRUE))
+cond.temp.hr <- merge(cond.hr, usgs.temp.hr, by='DATEHOUR', all.x=TRUE)
+ggplot(cond.temp.hr, aes(USGS, RIFFLE, color=TEMP)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  scale_color_gradient(low='steelblue', high='orangered')
+```
+
+![plot of chunk plot_cond_temp_hr](./index_files/figure-html/plot_cond_temp_hr.png) 
+
 # Conclusions
 
+Based on this analysis, we conclude:
+
+- Both riffles were able to withstand a multi-day deployment in the field. 
+- The temperature measurements by Riffle-1 show very strong agreement with the USGS gage with a consistent bias < 0.5 degC. 
+- The conductivity measurements do not agree as well with the USGS gage, although the differences between the RTC and thermister temperatures measured by Riffle-2 (which also measured the conductivity) suggest something may have been wrong.
+- The light levels show expected diurnal patterns, and could be compared to data on cloud cover to see if cloudy days resulted in lower light levels.
