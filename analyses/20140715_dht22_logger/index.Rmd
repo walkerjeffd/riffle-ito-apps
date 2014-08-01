@@ -18,6 +18,8 @@ This document summarizes data collected using a [Riffle-ito Water Quality Data L
 
 **Location**: The riffle-ito was placed on my office desk in Brunswick, ME. 
 
+![Riffle-ito with DHT22](img/riffle-ito-dht22.png)
+
 ## Set Up
 
 First we'll load the R packages used for this summary.
