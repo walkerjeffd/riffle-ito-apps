@@ -3,7 +3,9 @@ Riffle-ito Water Quality Sensor
 
 [Jeffrey D. Walker, PhD](http://walkerjeff.com)
 
-This repo contains sketches for programming the [Riffle-ito](https://github.com/p-v-o-s/riffle-ito) Water Quality Sensor.
+This repo contains sketches for programming the 
+[Riffle-ito](https://github.com/p-v-o-s/riffle-ito) Water Quality Sensor 
+developed by [Don Blair](https://github.com/p-v-o-s).
 
 ## Required Libraries
 
