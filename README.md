@@ -9,9 +9,9 @@ developed by [Don Blair](https://github.com/p-v-o-s).
 
 ## Required Libraries
 
-- [JeeLib](https://github.com/jcw/jeelib)
-- [DHTlib](https://github.com/adafruit/DHT-sensor-library): for using the DHT22 temperature/humidity sensor
-- [RTClib](https://github.com/mizraith/RTClib): @mizraith fork of Jeelab's RTClib that includes support for DS3231.
+- [JeeLib](https://github.com/jcw/jeelib): for low power mode using `Sleepy::loseSomeTime()`
+- [DHTlib](https://github.com/adafruit/DHT-sensor-library): [@adafruit](https://github.com/adafruit) library for using the DHT22 temperature/humidity sensor
+- [RTClib](https://github.com/mizraith/RTClib): [@mizraith](https://github.com/mizraith) fork of Jeelab's RTClib that includes support for DS3231.
 
 ## Hardware Setup
 
