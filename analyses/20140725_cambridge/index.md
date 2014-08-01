@@ -310,11 +310,45 @@ usgs.temp <- filter(usgs, VAR=="TEMP_C") %>%
   select(DATETIME, SOURCE, VAR, VALUE)
 temp <- rbind(riffle.temp, usgs.temp)
 ggplot(temp, aes(DATETIME, VALUE, color=SOURCE)) +
-  geom_line()
+  geom_line() +
+  labs(x="Datetime", y="Water Temperature (degC)")
 ```
 
 ![plot of chunk plot_usgs_riffle_temp](./index_files/figure-html/plot_usgs_riffle_temp.png) 
 
+
+
+```r
+riffle.cond <- filter(df, VAR=="CONDUCT_FREQ_HERTZ") %>%
+  mutate(SOURCE='RIFFLE') %>%
+  select(DATETIME, SOURCE, VAR, VALUE)
+usgs.cond <- filter(usgs, VAR=="SPCOND", DATETIME>=min(riffle.cond$DATETIME),
+                    DATETIME<=max(riffle.cond$DATETIME)) %>%
+  mutate(SOURCE='USGS') %>%
+  select(DATETIME, SOURCE, VAR, VALUE)
+cond <- rbind(riffle.cond, usgs.cond)
+ggplot(cond, aes(DATETIME, VALUE, color=SOURCE)) +
+  geom_line() +
+  labs(x="Datetime", y="Conductivity Freq (Riffle) / Sp. Conductivity (USGS)")
+```
+
+![plot of chunk plot_usgs_riffle_cond](./index_files/figure-html/plot_usgs_riffle_cond.png) 
+
+Compare hourly average conductivity measured by USGS and the Riffle.
+
+
+```r
+mutate(cond, DATEHOUR=round_date(DATETIME, unit='hour')) %>%
+  group_by(DATEHOUR, SOURCE, VAR) %>%
+  summarise(N=n(), VALUE=mean(VALUE, na.rm=TRUE)) %>%
+  select(-VAR, -N) %>%
+  spread(SOURCE, VALUE) %>%
+ggplot(aes(USGS, RIFFLE)) +
+  geom_point() +
+  geom_smooth(method='lm')
+```
+
+![plot of chunk plot_usgs_riffle_cond_scatter](./index_files/figure-html/plot_usgs_riffle_cond_scatter.png) 
 
 # Conclusions
 
