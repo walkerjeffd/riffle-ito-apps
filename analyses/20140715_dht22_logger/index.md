@@ -10,6 +10,8 @@ This document summarizes data collected using a [Riffle-ito Water Quality Data L
 
 **Description**: The riffle-ito was configured with the sketch above and set to record readings from a DHT22 temperature/humidity sensor every 60 seconds. Three fresh Duracell AA batteries were used to power the riffle-ito. Data were retrieved every few days resulting in short gaps and multiple data files, however the batteries were not changed.  
 
+**Location**: The riffle-ito was placed on my office desk in Brunswick, ME. 
+
 ## Set Up
 
 First we'll load the R packages used for this summary.
