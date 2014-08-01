@@ -186,7 +186,7 @@ void loop(void) {
   dataString += ",";
   dataString += int2string((int) (h*100));
   dataString += ",";
-  dataString += int2string(batteryLevel);
+  dataString += batteryLevel;
 
   // Open up the file we're going to log to!
   // dataFile = SD.open(outFileName, FILE_WRITE);
