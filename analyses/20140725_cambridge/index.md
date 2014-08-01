@@ -255,5 +255,66 @@ filter(df, VAR=='CONDUCT_FREQ_HERTZ') %>%
 
 ![plot of chunk plot_cond](./index_files/figure-html/plot_cond.png) 
 
+# Comparison to USGS Gage
+
+Station: [01104455 STONY BROOK, UNNAMED TRIBUTARY 1, NEAR WALTHAM, MA](http://waterdata.usgs.gov/ma/nwis/uv/?site_no=01104455)
+
+[Download File](http://waterdata.usgs.gov/ma/nwis/uv?cb_00060=on&cb_00010=on&cb_00095=on&cb_63680=on&cb_99404=on&format=rdb&site_no=01104455&period=&begin_date=2014-07-25&end_date=2014-08-01)
+
+
+```r
+usgs <- read.table('./data/01104455_20140725.txt', sep='\t', skip=30)
+names(usgs) <- c('AGENCY', 'STATION_ID', 'DATETIME', 'TIMEZONE', 'FLOW', 'FLOW_FLAG', 'TEMP_C', 'TEMP_FLAG', 'SPCOND', 'SPCOND_FLAG', 'TURB', 'TURB_FLAG', 'CHLORIDE', 'CHLORIDE_FLAG')
+usgs <- select(usgs, DATETIME, FLOW, TEMP_C, SPCOND, TURB, CHLORIDE) %>%
+  mutate(DATETIME=ymd_hm(DATETIME))
+head(usgs)
+```
+
+```
+##              DATETIME FLOW TEMP_C SPCOND TURB CHLORIDE
+## 1 2014-07-25 00:00:00 0.25   21.6   1210  1.0      320
+## 2 2014-07-25 00:15:00 0.25   21.6   1210  1.0      320
+## 3 2014-07-25 00:26:00 0.25   21.5     NA  1.0       NA
+## 4 2014-07-25 00:27:00 0.25   21.5   1200  1.0      320
+## 5 2014-07-25 00:30:00 0.25   21.5   1210  1.0      320
+## 6 2014-07-25 00:45:00 0.25   21.5   1210  0.5      320
+```
+
+Convert to long format.
+
+
+```r
+usgs <- gather(usgs, VAR, VALUE, FLOW:CHLORIDE)
+```
+
+Plot USGS timeseries
+
+
+```r
+ggplot(usgs, aes(DATETIME, VALUE)) +
+  geom_line() +
+  facet_wrap(~VAR, scales='free_y')
+```
+
+![plot of chunk plot_usgs_ts](./index_files/figure-html/plot_usgs_ts.png) 
+
+Compare Riffle temp to USGS temp
+
+
+```r
+riffle.temp <- filter(df, VAR=="TEMP_C") %>%
+  mutate(SOURCE=RIFFLE) %>%
+  select(DATETIME, SOURCE, VAR, VALUE)
+usgs.temp <- filter(usgs, VAR=="TEMP_C") %>%
+  mutate(SOURCE='USGS') %>%
+  select(DATETIME, SOURCE, VAR, VALUE)
+temp <- rbind(riffle.temp, usgs.temp)
+ggplot(temp, aes(DATETIME, VALUE, color=SOURCE)) +
+  geom_line()
+```
+
+![plot of chunk plot_usgs_riffle_temp](./index_files/figure-html/plot_usgs_riffle_temp.png) 
+
+
 # Conclusions
 

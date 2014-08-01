@@ -145,5 +145,48 @@ filter(df, VAR=='CONDUCT_FREQ_HERTZ') %>%
   labs(x='Datetime', y='Conductivity Frequency')
 ```
 
+# Comparison to USGS Gage
+
+Station: [01104455 STONY BROOK, UNNAMED TRIBUTARY 1, NEAR WALTHAM, MA](http://waterdata.usgs.gov/ma/nwis/uv/?site_no=01104455)
+
+[Download File](http://waterdata.usgs.gov/ma/nwis/uv?cb_00060=on&cb_00010=on&cb_00095=on&cb_63680=on&cb_99404=on&format=rdb&site_no=01104455&period=&begin_date=2014-07-25&end_date=2014-08-01)
+
+```{r load usgs}
+usgs <- read.table('./data/01104455_20140725.txt', sep='\t', skip=30)
+names(usgs) <- c('AGENCY', 'STATION_ID', 'DATETIME', 'TIMEZONE', 'FLOW', 'FLOW_FLAG', 'TEMP_C', 'TEMP_FLAG', 'SPCOND', 'SPCOND_FLAG', 'TURB', 'TURB_FLAG', 'CHLORIDE', 'CHLORIDE_FLAG')
+usgs <- select(usgs, DATETIME, FLOW, TEMP_C, SPCOND, TURB, CHLORIDE) %>%
+  mutate(DATETIME=ymd_hm(DATETIME))
+head(usgs)
+```
+
+Convert to long format.
+
+```{r convert usgs long}
+usgs <- gather(usgs, VAR, VALUE, FLOW:CHLORIDE)
+```
+
+Plot USGS timeseries
+
+```{r plot_usgs_ts}
+ggplot(usgs, aes(DATETIME, VALUE)) +
+  geom_line() +
+  facet_wrap(~VAR, scales='free_y')
+```
+
+Compare Riffle temp to USGS temp
+
+```{r plot_usgs_riffle_temp}
+riffle.temp <- filter(df, VAR=="TEMP_C") %>%
+  mutate(SOURCE=RIFFLE) %>%
+  select(DATETIME, SOURCE, VAR, VALUE)
+usgs.temp <- filter(usgs, VAR=="TEMP_C") %>%
+  mutate(SOURCE='USGS') %>%
+  select(DATETIME, SOURCE, VAR, VALUE)
+temp <- rbind(riffle.temp, usgs.temp)
+ggplot(temp, aes(DATETIME, VALUE, color=SOURCE)) +
+  geom_line()
+```
+
+
 # Conclusions
 
