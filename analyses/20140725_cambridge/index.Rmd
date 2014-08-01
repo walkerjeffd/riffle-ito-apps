@@ -1,0 +1,149 @@
+---
+title: "Riffle-ito Cambridge Deployment"
+author: "Jeff Walker & Don Blair"
+date: "August 1, 2014"
+output:
+  html_document:
+    keep_md: yes
+    toc: yes
+---
+
+This document summarizes data collected by two [Riffle-ito Water Quality Data Loggers](https://github.com/p-v-o-s/riffle-ito) deployed at a USGS streamflow gage in .
+
+**Purpose**: To determine the stability and battery-lifetime of a single riffle-ito deployment, and to compare the on-board RTC temperature measurements to the DHT22 measurements.
+
+**Description**: The riffle-ito was configured with the sketch above and set to record readings from a DHT22 temperature/humidity sensor every 60 seconds. Three fresh Duracell AA batteries were used to power the riffle-ito. Data were retrieved every few days resulting in short gaps and multiple data files, however the batteries were not changed.  
+
+**Location**: 
+
+## Set Up
+
+First we'll load the R packages used for this summary.
+
+```{r load packages, message=FALSE, warning=FALSE}
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+## Load Data
+
+The raw data are stored in the `./data` directory. There are multiple files for this 
+deployment because I temporarily removed the SD card from the riffle-ito to download
+the data. As shown in the [sketch](), whenever the riffle-ito is powered on, it creates a new logging file by incrementing the last two digits by one.
+
+```{r load data}
+riffle1 <- read.csv('./data/riffle1Deploy.CSV', as.is=TRUE)
+riffle2 <- read.csv('./data/riffle2Deploy.CSV', as.is=TRUE)
+head(riffle1)
+head(riffle2)
+```
+
+Next, we want to parse the datetimes using `lubridate::ymd_hms()` to `POSIXct` objects.
+
+```{r parse dates}
+riffle1 <- mutate(riffle1,
+                  DATETIME=ymd_hms(DATETIME),
+                  RIFFLE='Riffle-1',
+                  BATTERY_LEVEL=BATTERY_LEVEL*100)
+riffle2 <- mutate(riffle2,
+                  DATETIME_REG=ymd_hms(DATETIME_REG),
+                  RIFFLE='Riffle-2')
+summary(riffle1)
+summary(riffle2)
+```
+
+The data are currently in a wide format, where each column represents a single variable (see [Tidy Data](http://vita.had.co.nz/papers/tidy-data.pdf) and [Reshaping Data with the reshape Package](http://www.jstatsoft.org/v21/i12/paper) by Hadley Wickham for more information about long/wide formats, and note that `tidyr` is a relatively new package that provides much of the same functionality as the `reshape2` package). 
+
+For plotting, it will be easier to convert to a long format. This can easily be done using the `tidyr::gather` function.
+
+```{r gather}
+riffle1 <- gather(riffle1, VAR, VALUE, RTC_TEMP_C:BATTERY_LEVEL) %>%
+  filter(DATETIME >= ymd_hm("2014-07-25 12:00"),
+         DATETIME <= ymd_hm("2014-08-01 10:30"))
+riffle2 <- mutate(riffle2, DATETIME=DATETIME_REG) %>%
+  dplyr::select(-DATETIME_UNIX, -DATETIME_REG) %>%
+  gather(VAR, VALUE, RTC_TEMP_C, TEMP_C, 
+         CONDUCT_FREQ_HERTZ, PHOTORESIST, BATTERY_LEVEL) %>%
+  filter(DATETIME >= ymd_hm("2014-07-28 17:30"),
+         DATETIME <= ymd_hm("2014-08-01 10:30"))
+df <- rbind(riffle1, riffle2) %>%
+  mutate(RIFFLE=factor(RIFFLE))
+summary(df)
+```
+
+The data are now in long format with each row corresponding to one measurement for a single variable.
+
+## Visualizations
+
+We can plot the data with each panel showing one of the variables. The data are colored by the corresponding file/deployment. 
+
+```{r plot_timeseries}
+ggplot(df, aes(DATETIME, VALUE, color=RIFFLE)) +
+  geom_line() +
+  facet_wrap(~VAR, scales='free_y') +
+  labs(x='Datetime', y='Value') +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5),
+        legend.position='top')
+```
+
+Both Riffle-itos were extracted from the field around 2014-08-01 10:30 AM so we'll drop all data after that. 
+
+We can compare the RTC on-board temperature to the DHT22 temperature for verification. The red line in this figure is a 1:1 line of equality; the blue line is a linear regression. This figure shows that the DHT22 temperature (`TEMP_C`) tends to be about 0.5 degC greater than the RTC temperature (`RTC_TEMP_C`).
+
+```{r plot_compare_temp}
+spread(df, VAR, VALUE) %>%
+  ggplot(aes(RTC_TEMP_C, TEMP_C, color=RIFFLE)) +
+  geom_point() +
+  geom_abline(color='red', linetype=2) +
+  geom_smooth(method='lm')
+```
+
+THe differences between the RTC and DHT22 temperature show an interesting (i.e. non-regular) pattern over time.
+
+```{r plot_temp_diff}
+spread(df, VAR, VALUE) %>%
+  ggplot(aes(DATETIME, RTC_TEMP_C-TEMP_C, color=RIFFLE)) +
+  geom_point()
+```
+
+As another comparison, we can plot timeseries of the RTC temperature and the DHT22 temperature on the same figure.
+
+```{r plot_temp_ts}
+filter(df, VAR %in% c("RTC_TEMP_C", "TEMP_C")) %>%
+ggplot(aes(DATETIME, VALUE, color=VAR)) +
+  geom_line() +
+  facet_wrap(~RIFFLE, ncol=1)
+```
+
+## Light Sensor
+
+```{r plot_light}
+filter(df, VAR=='PHOTORESIST') %>%
+  ggplot(aes(DATETIME, VALUE)) +
+  geom_line() +
+  labs(x='Datetime', y='Photoresistor')
+```
+
+```{r plot_light_hour}
+filter(df, VAR=='PHOTORESIST') %>%
+  mutate(DATE=factor(floor_date(DATETIME, unit='day')),
+         DECIMAL_TIME=hour(DATETIME)+minute(DATETIME)/60) %>%
+  ggplot(aes(DECIMAL_TIME, VALUE, color=DATE)) +
+  geom_line() +
+  labs(x='Time of Day', y='Photoresistor')
+```
+
+## Conductivity Sensor
+
+```{r plot_cond}
+filter(df, VAR=='CONDUCT_FREQ_HERTZ') %>%
+  ggplot(aes(DATETIME, VALUE)) +
+  geom_line() +
+  labs(x='Datetime', y='Conductivity Frequency')
+```
+
+# Conclusions
+
