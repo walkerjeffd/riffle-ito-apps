@@ -11,7 +11,7 @@ developed by [Don Blair](https://github.com/p-v-o-s).
 
 - [JeeLib](https://github.com/jcw/jeelib)
 - [DHTlib](https://github.com/adafruit/DHT-sensor-library): for using the DHT22 temperature/humidity sensor
-- [RTClib](https://github.com/mizraith/RTClib) - mizraith's fork of Jeelab's RTClib that includes support for DS3231.
+- [RTClib](https://github.com/mizraith/RTClib): @mizraith fork of Jeelab's RTClib that includes support for DS3231.
 
 ## Hardware Setup
 
