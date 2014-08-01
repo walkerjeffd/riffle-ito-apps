@@ -5,6 +5,7 @@ date: "July 31, 2014"
 output:
   html_document:
     keep_md: yes
+    toc: yes
 ---
 
 This document summarizes data collected using a [Riffle-ito Water Quality Data Logger](https://github.com/p-v-o-s/riffle-ito) connected to a [DHT22 Temperature/Humidity Sensor](http://www.adafruit.com/products/393).
