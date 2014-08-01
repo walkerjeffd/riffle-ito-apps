@@ -1,4 +1,4 @@
-# DHT22 Deployment Summary
+# Riffle-ito & DHT22 Deployment Summary
 Jeffrey D Walker  
 July 31, 2014  
 

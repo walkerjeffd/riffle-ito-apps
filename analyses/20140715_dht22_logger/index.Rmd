@@ -1,5 +1,5 @@
 ---
-title: "DHT22 Deployment Summary"
+title: "Riffle-ito & DHT22 Deployment Summary"
 author: "Jeffrey D Walker"
 date: "July 31, 2014"
 output:
