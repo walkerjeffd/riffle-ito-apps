@@ -11,16 +11,8 @@ developed by [Don Blair](https://github.com/p-v-o-s).
 
 This repo currently contains two things:
 
-1) `ino/`: directory contains 'Arduino' sketches that are uploaded to the Riffle-ito. 
-Each folder currently contains a `*.ino` file that can be opened in the Arduino IDE and uploaded to a riffle-ito.
-2) `analyses/`: analyses of data collected by Riffle-ito. Each folder contains the data 
-files in `*.csv` format and a set of `index.Rmd`, `index.md` and `index.html` files. 
-The `index.Rmd` file is an R markdown document that serves as the source code for the analysis. This file is written 
-using [RStudio](http://www.rstudio.com/), and then compiled first to a markdown file (`index.md`) and then an html file (`index.html`) 
-using the [rmarkdown](http://rmarkdown.rstudio.com/) package integrated with RStudio. To view the analysis,
-simply click on the `index.md` file in github (e.g. [this one](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140715_dht22_logger/index.md)), 
-which will automatically format the markdown file for enjoyable reading.
-
+1. `ino/`: directory contains 'Arduino' sketches that are uploaded to the Riffle-ito. Each folder currently contains a `*.ino` file that can be opened in the Arduino IDE and uploaded to a riffle-ito.
+2. `analyses/`: analyses of data collected by Riffle-ito. Each folder contains the data files in `*.csv` format and a set of `index.Rmd`, `index.md` and `index.html` files. The `index.Rmd` file is an R markdown document that serves as the source code for the analysis. This file is written using [RStudio](http://www.rstudio.com/), and then compiled first to a markdown file (`index.md`) and then an html file (`index.html`) using the [rmarkdown](http://rmarkdown.rstudio.com/) package integrated with RStudio. To view the analysis, simply click on the `index.md` file in github (e.g. [this one](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140715_dht22_logger/index.md)), which will automatically format the markdown file for enjoyable reading.
 
 ## Required Libraries
 
