@@ -55,3 +55,7 @@ When deploying the Riffle-ito, be sure to set the `debug` variable in each sketc
 - [Adafruit Data Logger Shield Tutorial](https://learn.adafruit.com/adafruit-data-logger-shield/overview)
 - [Adafruit Thermister Tutorial](https://learn.adafruit.com/thermistor/overview)
 - [Adafruit DHTxx Tutorial](https://learn.adafruit.com/dht/overview)
+
+### License
+
+MIT (see [LICENSE](./LICENSE))
