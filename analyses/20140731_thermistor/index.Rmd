@@ -1,0 +1,122 @@
+---
+title: "Riffle-ito & Thermistor Deployment"
+author: "Jeffrey D Walker"
+date: "August3 , 2014"
+output:
+  html_document:
+    keep_md: yes
+    toc: yes
+---
+
+This document summarizes data collected using a [Riffle-ito Water Quality Data Logger](https://github.com/p-v-o-s/riffle-ito) connected to a [10K Precision Epoxy Thermistor](http://www.adafruit.com/products/372).
+
+**Sketch**: [riffleito_thermistor_logger](https://github.com/walkerjeffd/riffle-ito-apps/blob/d137e07d5ac23a683431f4cc5cf6c404482cfeae/ino/riffleito_thermister_logger/riffleito_thermister_logger.ino)
+
+**Purpose**: To determine the stability and battery-lifetime of a single riffle-ito deployment using a thermistor, and to compare the on-board RTC temperature measurements to the thermistor measurements.
+
+**Description**: The riffle-ito was configured with the sketch above and set to record readings from a 10K thermistor every 60 seconds. Three fresh Duracell AA batteries were used to power the riffle-ito. Data are retrieved every few days resulting in short gaps and multiple data files, however the batteries were not changed.  
+
+**Location**: The riffle-ito was placed on my dining room table in Brunswick, ME. 
+
+## Set Up
+
+First we'll load the R packages used for this summary.
+
+```{r load packages, message=FALSE, warning=FALSE}
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+## Load Data
+
+The raw data are stored in the `./data` directory. To load the data, first retrieve a list of the filenames.
+
+```{r get filenames}
+filenames <- dir(path='./data', pattern='*.CSV', full.names = TRUE)
+filenames
+```
+
+The `filenames` vector shows that there is/are `r length(filenames)` file(s).
+
+We can then use the `dplyr::rbind_all` file to automatically loop through this set of filenames, load each file, append a column named `FILE` that stores the filename for each dataset, and finally merge the datasets for each file in a single data frame named `df`.
+
+```{r load files}
+df <- rbind_all(lapply(filenames, function (filename) {
+  read.csv(filename, as.is=TRUE) %>%
+    mutate(FILE=filename)
+}))
+head(df)
+```
+
+Next, we want to parse the datetimes using `lubridate::ymd_hms()` to `POSIXct` objects, and convert the `FILE` column to a factor.
+
+```{r parse dates}
+df <- mutate(df,
+             DATETIME=ymd_hms(DATETIME),
+             FILE=factor(FILE))
+summary(df)
+```
+
+The data are currently in a wide format, where each column represents a single variable (see [Tidy Data](http://vita.had.co.nz/papers/tidy-data.pdf) and [Reshaping Data with the reshape Package](http://www.jstatsoft.org/v21/i12/paper) by Hadley Wickham for more information about long/wide formats, and note that `tidyr` is a relatively new package that provides much of the same functionality as the `reshape2` package). 
+
+For plotting, it will be easier to convert to a long format. This can easily be done using the `tidyr::gather` function.
+
+```{r gather}
+df <- gather(df, VAR, VALUE, RTC_TEMP_C:BATTERY_LEVEL)
+head(df)
+summary(df)
+```
+
+The data are now in long format with each row corresponding to one measurement for a single variable.
+
+## Visualizations
+
+We can plot the data with each panel showing one of the four variables. The data are colored by the corresponding filename. 
+
+```{r plot_timeseries}
+ggplot(df, aes(DATETIME, VALUE, color=FILE)) +
+  geom_line() +
+  facet_wrap(~VAR, scales='free_y') +
+  labs(x='Datetime', y='Value') +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5),
+        legend.position='top')
+```
+
+We can compare the RTC on-board temperature to the thermistor temperature for verification. The red line in this figure is a 1:1 line of equality; the blue line is a linear regression. This figure shows good agreement between the thermistor temperature (`TEMP_C`) and the RTC temperature (`RTC_TEMP_C`).
+
+```{r plot_compare_temp}
+spread(df, VAR, VALUE) %>%
+  ggplot(aes(RTC_TEMP_C, TEMP_C)) +
+  geom_point() +
+  geom_abline(color='red', linetype=2) +
+  geom_smooth(method='lm')
+```
+
+The differences between the RTC and thermistor temperature show an interesting (i.e. non-regular) pattern over time.
+
+```{r plot_temp_diff}
+spread(df, VAR, VALUE) %>%
+  ggplot(aes(DATETIME, RTC_TEMP_C-TEMP_C)) +
+  geom_point()
+```
+
+As another comparison, we can plot timeseries of the RTC temperature and the thermistor temperature on the same figure.
+
+```{r plot_temp_ts}
+filter(df, VAR %in% c("RTC_TEMP_C", "TEMP_C")) %>%
+ggplot(aes(DATETIME, VALUE, color=VAR)) +
+  geom_line()
+```
+
+The differences may be caused by sunlight warming the thermistor (which is black). Also for some of the deployment, the thermistor was hanging off the edge of the table, so it was not in the exact same location as the RTC.
+
+# Conclusions
+
+Based on these plots, I conclude:
+
+- The riffle-ito is able to collect stable thermistor measurements over time
+- As of right now, the riffle-ito has been operational for **`r format(as.numeric(max(df$DATETIME) - min(df$DATETIME)), digits=4)` days** on only 3 AA batteries taking measurements every ~60 seconds. However, it is still running as I write this.
+- There is strong agreement between the thermistor and RTC temperatures. The mean difference between the two (`RTC_TEMP_C-TEMP_C`) was `r format(median((spread(df, VAR, VALUE) %>% mutate(DIFF=RTC_TEMP_C-TEMP_C))$DIFF), digits=3)` degC indicating higher temperatures measured by the thermistor. This could probably be corrected by measuring the actual resistance of the series resistor used in the thermistor circuit.
