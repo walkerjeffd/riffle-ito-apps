@@ -1,6 +1,9 @@
-freq <- x$RIFFLE_FREQ
-obs <- x$USGS
-temp <- x$TEMP
+# assumes index.Rmd chunks already run so cond.temp.hr dataframe is in env
+
+dt <- cond.temp.hr$DATEHOUR
+freq <- cond.temp.hr$RIFFLE
+obs <- cond.temp.hr$USGS
+temp <- cond.temp.hr$TEMP
 alpha <- 0.024
 
 calc.cond <- function(f, LA, C, R, alpha, temp) {
@@ -16,12 +19,6 @@ par(mfrow=c(1,1))
 plot(cbind(obs, calc.cond(freq, 67, 0.185e-6, 3070, alpha, temp)),
      xlab='USGS SpCond (uS/cm)', ylab='Riffle SpCond (uS/cm)')
 abline(0,1)
-
-N <- 10000
-z <- data.frame(R=runif(N, 3000, 3600),  # ohm
-                C=runif(N, 0.001, 0.15),  # uF
-                LA=runif(N, 0.5, 20), # 1/cm
-                RMSE=NA)
 
 N <- 100000
 z <- data.frame(R=runif(N, 1000, 5000),  # ohm
@@ -47,12 +44,6 @@ plot(cbind(obs, calc.cond(freq, z.opt[['LA']]*100, z.opt[['C']]*1e-6, z.opt[['R'
      xlab='USGS SpCond (uS/cm)', ylab='Riffle SpCond (uS/cm)')
 abline(0, 1)
 
-data.frame(DATEHOUR=cond.temp.hr$DATEHOUR, RIFFLE=calc.cond(cond.temp.hr$RIFFLE, z.opt[['LA']]*100, z.opt[['C']]*1e-6, z.opt[['R']], alpha, cond.temp.hr$TEMP),
-           USGS=cond.temp.hr$USGS) %>%
-  gather(SOURCE, VALUE, RIFFLE:USGS) %>%
-  ggplot(aes(DATEHOUR, VALUE, color=SOURCE)) +
-  geom_line() +
-  labs(x="Date", y="Specific Conductivity (uS/cm)")
 
 
 plot(cbind(, ),
@@ -86,3 +77,14 @@ z.opt <- z[which.min(z$RMSE),]
 plot(cbind(obs, calc.cond(freq, z.opt[['LA']]*100, z.opt[['C']]*1e-6, z.opt[['R']], z.opt[['alpha']], temp)),
      xlab='USGS SpCond (uS/cm)', ylab='Riffle SpCond (uS/cm)')
 abline(0, 1)
+
+
+# for don
+
+data.frame(DATEHOUR=dt,
+           RIFFLE=calc.cond(freq, 1.87*100, 0.12*1e-6, 3200, 0.024, temp),
+           USGS=cond.temp.hr$USGS) %>%
+  gather(SOURCE, VALUE, RIFFLE:USGS) %>%
+  ggplot(aes(DATEHOUR, VALUE, color=SOURCE)) +
+  geom_line() +
+  labs(x="Date", y="Specific Conductivity (uS/cm)")
