@@ -177,7 +177,8 @@ As another comparison, we can plot timeseries of the RTC and thermister temperat
 filter(df, VAR %in% c("RTC_TEMP_C", "TEMP_C")) %>%
 ggplot(aes(DATETIME, VALUE, color=VAR)) +
   geom_line() +
-  facet_wrap(~RIFFLE, ncol=1)
+  facet_wrap(~RIFFLE, ncol=1) +
+  labs(x="Datetime", y="Temperature (degC)")
 ```
 
 ![plot of chunk plot_temp_ts](./index_files/figure-html/plot_temp_ts.png) 
