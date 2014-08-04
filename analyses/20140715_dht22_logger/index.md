@@ -43,9 +43,10 @@ filenames
 
 ```
 ## [1] "./data/LOGGER41.CSV" "./data/LOGGER42.CSV" "./data/LOGGER43.CSV"
+## [4] "./data/LOGGER44.CSV"
 ```
 
-The `filenames` vector shows that there are 3 files.
+The `filenames` vector shows that there are 4 files.
 
 We can then use the `dplyr::rbind_all` file to automatically loop through this set of filenames, load each file, append a column named `FILE` that stores the filename for each dataset, and finally merge the datasets for each file in a single data frame named `df`.
 
@@ -88,17 +89,17 @@ summary(df)
 ```
 ##     DATETIME                     RTC_TEMP_C       TEMP_C    
 ##  Min.   :2014-07-15 22:10:03   Min.   :19.2   Min.   :19.7  
-##  1st Qu.:2014-07-19 21:59:22   1st Qu.:22.5   1st Qu.:22.9  
-##  Median :2014-07-23 21:51:43   Median :23.8   Median :24.2  
-##  Mean   :2014-07-23 21:47:44   Mean   :23.7   Mean   :24.1  
-##  3rd Qu.:2014-07-27 21:36:56   3rd Qu.:24.8   3rd Qu.:25.1  
-##  Max.   :2014-07-31 21:19:16   Max.   :28.8   Max.   :29.3  
+##  1st Qu.:2014-07-20 20:24:38   1st Qu.:22.5   1st Qu.:22.8  
+##  Median :2014-07-25 18:43:50   Median :23.5   Median :24.0  
+##  Mean   :2014-07-25 18:39:26   Mean   :23.5   Mean   :24.0  
+##  3rd Qu.:2014-07-30 16:52:33   3rd Qu.:24.5   3rd Qu.:25.0  
+##  Max.   :2014-08-04 15:00:11   Max.   :28.8   Max.   :29.3  
 ##   HUMIDITY_PCT  BATTERY_LEVEL                   FILE      
-##  Min.   :46.0   Min.   :6.72   ./data/LOGGER41.CSV: 4119  
-##  1st Qu.:59.6   1st Qu.:6.78   ./data/LOGGER42.CSV: 5062  
-##  Median :64.6   Median :6.86   ./data/LOGGER43.CSV:13451  
-##  Mean   :65.4   Mean   :6.90                              
-##  3rd Qu.:71.4   3rd Qu.:6.99                              
+##  Min.   :46.0   Min.   :6.66   ./data/LOGGER41.CSV: 4119  
+##  1st Qu.:60.6   1st Qu.:6.74   ./data/LOGGER42.CSV: 5062  
+##  Median :65.6   Median :6.81   ./data/LOGGER43.CSV:13451  
+##  Mean   :65.9   Mean   :6.86   ./data/LOGGER44.CSV: 5301  
+##  3rd Qu.:71.1   3rd Qu.:6.95                              
 ##  Max.   :85.2   Max.   :7.35
 ```
 
@@ -129,16 +130,16 @@ summary(df)
 ```
 ##     DATETIME                                    FILE      
 ##  Min.   :2014-07-15 22:10:03   ./data/LOGGER41.CSV:16476  
-##  1st Qu.:2014-07-19 21:59:22   ./data/LOGGER42.CSV:20248  
-##  Median :2014-07-23 21:51:43   ./data/LOGGER43.CSV:53804  
-##  Mean   :2014-07-23 21:47:44                              
-##  3rd Qu.:2014-07-27 21:36:56                              
-##  Max.   :2014-07-31 21:19:16                              
+##  1st Qu.:2014-07-20 20:24:38   ./data/LOGGER42.CSV:20248  
+##  Median :2014-07-25 18:43:50   ./data/LOGGER43.CSV:53804  
+##  Mean   :2014-07-25 18:39:26   ./data/LOGGER44.CSV:21204  
+##  3rd Qu.:2014-07-30 16:52:33                              
+##  Max.   :2014-08-04 15:00:11                              
 ##             VAR            VALUE      
-##  RTC_TEMP_C   :22632   Min.   : 6.72  
-##  TEMP_C       :22632   1st Qu.:16.27  
-##  HUMIDITY_PCT :22632   Median :23.90  
-##  BATTERY_LEVEL:22632   Mean   :30.03  
+##  RTC_TEMP_C   :27933   Min.   : 6.66  
+##  TEMP_C       :27933   1st Qu.:16.27  
+##  HUMIDITY_PCT :27933   Median :23.75  
+##  BATTERY_LEVEL:27933   Mean   :30.06  
 ##                        3rd Qu.:33.48  
 ##                        Max.   :85.20
 ```
@@ -212,6 +213,6 @@ spread(df, VAR, VALUE) %>%
 Based on these plots, I conclude:
 
 - The riffle-ito is able to collect stable measurements over time
-- As of right now, the riffle-ito has been operational for **15.96 days** on only 3 AA batteries taking measurements every ~60 seconds. However, it is still running as I write this.
+- As of right now, the riffle-ito has been operational for **19.7 days** on only 3 AA batteries taking measurements every ~60 seconds. However, it is still running as I write this.
 - There seems to be ~0.5 degC difference between the on-board RTC temperature and the DHT22 temperature. This could be due to the different enclosures (RTC temperature sensor is embedded on the board, somewhere) or differences in how the raw readings are converted to temperature values.
 - The battery level decreases exponentially. It's not clear to me what this value represents. Don indicated that it should reflect the % remaining battery power times a factor of 10. Note that in the sketch, I inadvertently divided by 100 by using the int2string() function when writing the battery level reading to the SD card. So really, the values should be multiplied by 10 to reflect % remaining battery life (e.g. a value of 5.34 shown in the plot should be 53.4%).
