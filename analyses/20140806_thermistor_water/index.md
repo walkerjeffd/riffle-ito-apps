@@ -8,9 +8,11 @@ This document summarizes data collected using a [Riffle-ito Water Quality Data L
 
 **Purpose**: To test the ability to measure temperature when submerged. And to make sure the enclosure does not leak.
 
-**Description**: The riffle-ito was configured with the sketch above and set to record readings from a 10K thermistor every 60 seconds. The jar was submerged in hot tap water around noon to induce a change in temperature.
+**Description**: The riffle-ito was configured with the sketch above and set to record readings from a 10K thermistor every 60 seconds. An enclosure was built using a VOSS water bottle and then submerged in a large glass jar. The jar was placed in hot tap water around noon to induce a change in temperature.
 
 **Location**: The riffle-ito was placed in a large glass jar in kitchen in Brunswick, ME. 
+
+![riffle-ito water test](img/jar.jpg)
 
 ## Set Up
 
