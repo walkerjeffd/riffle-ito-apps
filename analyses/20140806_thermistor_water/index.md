@@ -148,6 +148,8 @@ ggplot(df, aes(DATETIME, VALUE, color=FILE)) +
 
 ![plot of chunk plot_timeseries](./index_files/figure-html/plot_timeseries.png) 
 
+The spike in temperature was caused by placing the jar in a hot water bath in the sink at around 12:00. It was then removed from the hot water around 15:00 and placed on the counter to cool.
+
 We can compare the RTC on-board temperature to the thermistor temperature for verification. The red line in this figure is a 1:1 line of equality; the blue line is a linear regression. This figure shows good agreement between the thermistor temperature (`TEMP_C`) and the RTC temperature (`RTC_TEMP_C`).
 
 
