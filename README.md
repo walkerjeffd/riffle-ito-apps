@@ -12,9 +12,11 @@ by the Riffle-ito.
 
 Here are direct links to each analysis document:
 
-- [20140715_dht22_logger](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140715_dht22_logger/index.md): deployment of a riffle-ito with DHT22 temperature/humidity sensor to test battery life, stability, and compare RTC temperature to DHT22 temperature readings.
+- [20140715_dht22_logger](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140715_dht22_logger/index.md): riffle-ito with DHT22 temperature/humidity sensor to test battery life, stability, and compare RTC temperature to DHT22 temperature readings.
 - [20140725_cambridge](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140725_cambridge/index.md): first field deployment of two riffle-itos measuring temperature, conductivity and light levels located at a USGS gage for verification.
-- [20140731_thermistor](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140731_thermistor/index.md): deployment of riffle-ito with 10K thermistor to test battery life, stability, and compare RTC temperature to thermistor.
+- [20140731_thermistor](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140731_thermistor/index.md): riffle-ito with thermistor measuring indoor air temperature to test battery life, stability, and compare RTC temperature to thermistor.
+- [20140806_thermistor_water](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140806_thermistor_water/index.md): riffle-ito with thermistor submerged in a glass jar to test stability and enclosure seal.
+- [20140807_kayak](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140807_kayak/index.md): riffle-ito with thermistor dragged behind kayak with Arduino/GPS to measure temperature transects along a river.
 
 ## Description
 
