@@ -164,6 +164,7 @@ ggmap(map, darken=c(0.25, "white"), extent="device") +
 
 ![plot of chunk map_temp](./index_files/figure-html/map_temp.png) 
 
+## Photo Map
 And this is a map of the light levels. 
 
 
@@ -179,9 +180,9 @@ ggmap(map, darken=c(0.25, "white"), extent="device") +
 
 ![plot of chunk map_photo](./index_files/figure-html/map_photo.png) 
 
-### Photo vs. Speed
+## Photo vs. Speed
 
-To try and identify which riffle measurements were collected when the riffle was in the water, I can try plotting my speed vs the photo level. It shows somewhat low light levels at high speeds probably because the photocell was covered by the edge of the kayak.
+To try and identify which riffle measurements were collected when the riffle was in the water, I can try plotting my speed vs the photo level. 
 
 
 ```r
@@ -195,7 +196,7 @@ ggplot(df, aes(SPEED, PHOTO)) +
 
 ![plot of chunk plot_photo_speed](./index_files/figure-html/plot_photo_speed.png) 
 
-
+This figure plots light levels, temperature and speed on identical x-axes for comparison. The time with high speed was when I paddled from the second drop to the third drop location. 
 
 
 ```r
