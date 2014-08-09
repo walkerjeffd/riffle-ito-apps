@@ -17,6 +17,7 @@ Here are direct links to each analysis document:
 - [20140731_thermistor](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140731_thermistor/index.md): riffle-ito with thermistor measuring indoor air temperature to test battery life, stability, and compare RTC temperature to thermistor.
 - [20140806_thermistor_water](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140806_thermistor_water/index.md): riffle-ito with thermistor submerged in a glass jar to test stability and enclosure seal.
 - [20140807_kayak](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140807_kayak/index.md): riffle-ito with thermistor dragged behind kayak with Arduino/GPS to measure temperature transects along a river.
+- [20140809_kayak_depth](https://github.com/walkerjeffd/riffle-ito-apps/blob/master/analyses/20140808_kayak_depth/index.md): riffle-ito with thermistor and photocell used to measure changes over depth in a river from a kayak.
 
 ## Description
 
