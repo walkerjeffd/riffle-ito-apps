@@ -7,7 +7,7 @@
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
-int debug = 1;
+int debug = 0;
 int led = A2;
 int photoPin = A0;
 int photoReading;
