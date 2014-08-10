@@ -12,6 +12,10 @@ To keep the enclosure submerged, I tied a bag of rocks to it.
 
 ![Rocks](img/rocks.jpg)
 
+Here is a video showing some highlights from the deployment.
+
+<iframe width="560" height="315" src="//www.youtube.com/embed/t26eL-m8-zo" frameborder="0" allowfullscreen></iframe>
+
 ## R Libraries
 
 
