@@ -12,6 +12,7 @@ output:
 
 I attached a riffle-ito to my kayak and paddled around the Androscoggin River. I also had an Arduino Uno with a GPS Shield logging my location. Here's what it looked like:
 
+
 ![Kayak Setup](img/kayak.jpg)
 
 To keep the enclosure submerged, I tied a bag of rocks to it.
