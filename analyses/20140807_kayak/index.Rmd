@@ -101,7 +101,8 @@ gps.1min <- group_by(gps, DATETIME=round_date(DATETIME, unit='minute')) %>%
   summarise(N.GPS=n(),
             LATITUDE=mean(LATITUDE),
             LONGITUDE=mean(LONGITUDE))
-df <- merge(riffle.1min, gps.1min, by="DATETIME", all=TRUE)
+df <- merge(riffle.1min, gps.1min, by="DATETIME", all=TRUE) %>%
+  filter(!is.na(LATITUDE))
 ```
 
 The data now look like this:
