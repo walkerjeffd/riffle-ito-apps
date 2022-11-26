@@ -1,0 +1,165 @@
+---
+title: "Riffle-ito Temperature Calibration Experiment"
+author: "Jeffrey D Walker"
+date: "August 12, 2014"
+output: html_document
+---
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(ggmap)
+theme_set(theme_bw())
+```
+
+Load the riffle-ito data from a csv file. Note that the `PHOTO` values are inversely proportional to the light levels (higher PHOTO values -> lower light levels). So I'll reverse the PHOTO values by subtracting them from the maximum analog reading of 1023 (as was done by [Adafruit](https://learn.adafruit.com/photocells/using-a-photocell)). 
+
+```{r load riffle}
+rif1 <- read.csv('data/LOGGER37.CSV', as.is=TRUE)
+rif1 <- mutate(rif1, DATETIME=ymd_hms(DATETIME)) %>%
+  mutate(PHOTO=1023-PHOTO) # reverse
+head(rif1)
+```
+
+```{r}
+obs1 <- read.csv('data/OBS_1.csv', as.is=TRUE) %>%
+  mutate(DATETIME=paste(DATE, TIME, sep=' '),
+         DATETIME=mdy_hm(DATETIME),
+         SOURCE="Observe") %>%
+  select(DATETIME, TEMP_C, SOURCE)
+```
+
+```{r}
+ggplot(rif1, aes(DATETIME, TEMP_C)) +
+  geom_line() +
+  geom_point(aes(DATETIME, TEMP_C), data=obs1, color='red', size=3)
+```
+
+# Trial 2
+
+```{r load riffle 2}
+rif2 <- read.csv('data/LOGGER43.CSV', as.is=TRUE)
+rif2 <- mutate(rif2, DATETIME=ymd_hms(DATETIME)) %>%
+  mutate(PHOTO=1023-PHOTO) # reverse
+head(rif2)
+```
+
+```{r}
+obs2 <- read.csv('data/OBS_2.csv', as.is=TRUE) %>%
+  mutate(DATETIME=paste(DATE, TIME, sep=' '),
+         DATETIME=mdy_hm(DATETIME),
+         SOURCE="Observe") %>%
+  select(DATETIME, TEMP_C, SOURCE)
+```
+
+This figure shows the time series of riffle temperature and observed temperature. I wonder if the ice water was actually stratified with colder water on the bottom and warmer water on the top.
+
+```{r}
+ggplot(rif2, aes(DATETIME, TEMP_C)) +
+  geom_line() +
+  geom_point(aes(DATETIME, TEMP_C), data=obs2, color='red', size=3)  
+```
+
+# Time Constant
+
+$$\frac{T(t) - T_f}{T_0 - T_f} = e^{-t/\tau}$$
+
+
+$$\ln{\frac{T(t) - T_f}{T_0 - T_f}} = -t/\tau$$
+
+see: http://rpaulsingh.com/learning/virtual/experiments/timeconstant/index.html
+
+## First Rise
+
+```{r}
+rif2.1 <- filter(rif2, 
+                 DATETIME >= ymd_hms("2014-08-12 18:04:53"),
+                 DATETIME <= ymd_hms("2014-08-12 18:09:52"))
+rif2.1 %>%
+  ggplot(aes(DATETIME, TEMP_C)) +
+  geom_line()
+```
+
+
+```{r}
+mutate(rif2.1, 
+       time = as.numeric(DATETIME-min(DATETIME)),
+       T_ratio = (TEMP_C-max(TEMP_C))/(min(TEMP_C)-max(TEMP_C)),
+       log_T_ratio = log(T_ratio)) %>%
+  filter(T_ratio > 0) %>%
+ggplot(aes(time, log_T_ratio)) +
+  geom_point() +
+  geom_smooth(method='lm')
+```
+
+```{r}
+lm.rif2.1 <- mutate(rif2.1, 
+       time = as.numeric(DATETIME-min(DATETIME)),
+       T_ratio = (TEMP_C-max(TEMP_C))/(min(TEMP_C)-max(TEMP_C)),
+       log_T_ratio = log(T_ratio)) %>%
+  filter(T_ratio > 0) %>%
+  lm(log_T_ratio ~ time, data=.)
+summary(lm.rif2.1)
+tau <- 1/(-coef(lm.rif2.1)[['time']])
+tau
+```
+
+```{r}
+mutate(rif2.1, 
+       time = as.numeric(DATETIME-min(DATETIME)),
+       T_ratio = (TEMP_C-max(TEMP_C))/(min(TEMP_C)-max(TEMP_C)),
+       log_T_ratio = log(T_ratio)) %>%
+  filter(T_ratio > 0) %>%
+ggplot(aes(time, 1-T_ratio)) +
+  geom_point() +
+  geom_vline(xint=tau)
+```
+
+
+## Second Rise
+
+```{r}
+rif2.2 <- filter(rif2, 
+                 DATETIME >= ymd_hms("2014-08-12 18:09:53"),
+                 DATETIME <= ymd_hms("2014-08-12 18:14:51"))
+rif2.2 %>%
+  ggplot(aes(DATETIME, TEMP_C)) +
+  geom_line()
+```
+
+
+```{r}
+mutate(rif2.2, 
+       time = as.numeric(DATETIME-min(DATETIME)),
+       T_ratio = (TEMP_C-min(TEMP_C))/(max(TEMP_C)-min(TEMP_C)),
+       log_T_ratio = log(T_ratio)) %>%
+  filter(T_ratio > 0) %>%
+ggplot(aes(time, log_T_ratio)) +
+  geom_point() +
+  geom_smooth(method='lm')
+```
+
+```{r}
+lm.rif2.2 <- mutate(rif2.2, 
+       time = as.numeric(DATETIME-min(DATETIME)),
+       T_ratio = (TEMP_C-min(TEMP_C))/(max(TEMP_C)-min(TEMP_C)),
+       log_T_ratio = log(T_ratio)) %>%
+  filter(T_ratio > 0) %>%
+  lm(log_T_ratio ~ time, data=.)
+summary(lm.rif2.2)
+tau <- 1/(-coef(lm.rif2.2)[['time']])
+tau
+```
+
+```{r}
+mutate(rif2.2, 
+       time = as.numeric(DATETIME-min(DATETIME)),
+       T_ratio = (TEMP_C-min(TEMP_C))/(max(TEMP_C)-min(TEMP_C)),
+       log_T_ratio = log(T_ratio)) %>%
+  filter(T_ratio > 0) %>%
+ggplot(aes(time, 1-T_ratio)) +
+  geom_point() +
+  geom_vline(xint=tau)
+```
